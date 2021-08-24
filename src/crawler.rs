@@ -1,18 +1,18 @@
+use crate::api::crawl::CrawlOpts;
 use crate::client::FetchProvider;
 use crate::session_stats::SessionStats;
-use crate::Opts;
 use std::collections::HashSet;
 
 // #[derive(Copy, Debug)]
 pub struct Crawler {
-    pub options: Opts,
+    pub options: CrawlOpts,
     client: Box<dyn FetchProvider>,
     visited: Box<HashSet<String>>,
     stats: SessionStats,
 }
 
 impl Crawler {
-    pub fn new(client: Box<dyn FetchProvider>, opts: Opts) -> Self {
+    pub fn new(client: Box<dyn FetchProvider>, opts: CrawlOpts) -> Self {
         Self {
             options: opts,
             client,
@@ -83,13 +83,13 @@ impl Crawler {
 mod tests {
     use super::Crawler;
     use crate::client::{FetchProvider, Result};
+    use crate::crawler::CrawlOpts;
     use crate::node::Node;
-    use crate::Opts;
     #[test]
     fn test_crawl_same_domain_should_pass() {
         struct FakeClient {}
         impl FetchProvider for FakeClient {
-            fn fetch(&self, url: &str, opts: &Opts) -> Result<Node> {
+            fn fetch(&self, url: &str, opts: &CrawlOpts) -> Result<Node> {
                 let content =  match url.contains("start") {
                     false => "<html><head></head><body></body></html>",
                     true => "<html><head></head><body><a href=\"https://test1.com/end\">bootles</a></body></html>",
@@ -100,9 +100,9 @@ mod tests {
         }
         let mut session = Crawler::new(
             Box::new(FakeClient {}),
-            Opts {
+            CrawlOpts {
                 urls: vec!["https://test1.com/start".to_string()],
-                json: false,
+                output: None,
                 same_domain: true,
                 stats: false,
             },
@@ -116,7 +116,7 @@ mod tests {
     fn test_crawl_same_domain_should_fail() {
         struct FakeClient {}
         impl FetchProvider for FakeClient {
-            fn fetch(&self, url: &str, opts: &Opts) -> Result<Node> {
+            fn fetch(&self, url: &str, opts: &CrawlOpts) -> Result<Node> {
                 let content =  match url.contains("start") {
                     false => "<html><head></head><body></body></html>",
                     true => "<html><head></head><body><a href=\"https://test1.com/end\">bootles</a></body></html>",
@@ -127,9 +127,9 @@ mod tests {
         }
         let mut session = Crawler::new(
             Box::new(FakeClient {}),
-            Opts {
+            CrawlOpts {
                 urls: vec!["https://google.com".to_string()],
-                json: false,
+                output: None,
                 same_domain: true,
                 stats: false,
             },

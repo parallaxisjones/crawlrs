@@ -1,12 +1,12 @@
+use crate::api::crawl::CrawlOpts;
 use crate::error::Error;
 use crate::node::Node;
-use crate::Opts;
 use std::io::Read;
 
 pub type Result<T> = std::result::Result<T, Error>;
 
 pub trait FetchProvider {
-    fn fetch(&self, url: &str, opts: &Opts) -> Result<Node>;
+    fn fetch(&self, url: &str, opts: &CrawlOpts) -> Result<Node>;
 }
 
 pub struct CrawlrsClient {
@@ -22,7 +22,7 @@ impl CrawlrsClient {
 }
 
 impl FetchProvider for CrawlrsClient {
-    fn fetch(&self, url: &str, options: &Opts) -> Result<Node> {
+    fn fetch(&self, url: &str, options: &CrawlOpts) -> Result<Node> {
         let mut res = self.client.get(url).send().map_err(|e| (url, e))?;
 
         if !res.status().is_success() {
