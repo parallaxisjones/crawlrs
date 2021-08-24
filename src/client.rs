@@ -1,10 +1,12 @@
-use crate::error::FetchError;
+use crate::error::Error;
 use crate::node::Node;
 use crate::Opts;
 use std::io::Read;
 
+pub type Result<T> = std::result::Result<T, Error>;
+
 pub trait FetchProvider {
-    fn fetch(&self, url: &str, opts: &Opts) -> Result<Node, FetchError>;
+    fn fetch(&self, url: &str, opts: &Opts) -> Result<Node>;
 }
 
 pub struct CrawlrsClient {
@@ -20,21 +22,18 @@ impl CrawlrsClient {
 }
 
 impl FetchProvider for CrawlrsClient {
-    fn fetch(&self, site: &str, options: &Opts) -> Result<Node, FetchError> {
-        let mut res = match self.client.get(site).send() {
-            Ok(res) => res,
-            Err(_e) => return Err(FetchError::new("error getting content")),
-        };
+    fn fetch(&self, url: &str, options: &Opts) -> Result<Node> {
+        let mut res = self.client.get(url).send().map_err(|e| (url, e))?;
+
         if !res.status().is_success() {
-            error!("{}: {}", res.status(), site);
-            return Err(FetchError::new("404"));
+            error!("{}: {}", res.status(), url);
         } else {
-            info!("{}: {}", res.status(), site);
+            info!("{}: {}", res.status(), url);
         }
+
         let mut body = String::new();
-        match res.read_to_string(&mut body) {
-            Ok(_) => Ok(Node::new(site, &body, options.clone())),
-            Err(_e) => return Err(FetchError::new("malformed content")),
-        }
+        res.read_to_string(&mut body).map_err(|e| (url, e))?;
+
+        Ok(Node::new(url, &body, options.clone()))
     }
 }

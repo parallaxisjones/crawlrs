@@ -1,27 +1,23 @@
-use std::error::Error;
-use std::fmt;
-
 #[derive(Debug)]
-pub struct FetchError {
-    details: String,
+pub enum Error {
+    Write { url: String, e: std::io::Error },
+    Fetch { url: String, e: reqwest::Error },
 }
 
-impl FetchError {
-    pub fn new(msg: &str) -> FetchError {
-        FetchError {
-            details: msg.to_string(),
+impl<S: AsRef<str>> From<(S, std::io::Error)> for Error {
+    fn from((url, e): (S, std::io::Error)) -> Self {
+        Error::Write {
+            url: url.as_ref().to_string(),
+            e,
         }
     }
 }
 
-impl fmt::Display for FetchError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.details)
-    }
-}
-
-impl Error for FetchError {
-    fn description(&self) -> &str {
-        &self.details
+impl<S: AsRef<str>> From<(S, reqwest::Error)> for Error {
+    fn from((url, e): (S, reqwest::Error)) -> Self {
+        Error::Fetch {
+            url: url.as_ref().to_string(),
+            e,
+        }
     }
 }

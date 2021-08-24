@@ -36,6 +36,7 @@ impl Crawler {
             .urls
             .iter()
             .map(|url| {
+                //NB: this unwrap is safe because we have handled the error in the client
                 let root_node = self.client.fetch(&url, &self.options).unwrap();
                 let links = root_node.get_links_from_html();
                 links
@@ -81,15 +82,14 @@ impl Crawler {
 #[cfg(test)]
 mod tests {
     use super::Crawler;
-    use crate::client::FetchProvider;
-    use crate::error::FetchError;
+    use crate::client::{FetchProvider, Result};
     use crate::node::Node;
     use crate::Opts;
     #[test]
     fn test_crawl_same_domain_should_pass() {
         struct FakeClient {}
         impl FetchProvider for FakeClient {
-            fn fetch(&self, url: &str, opts: &Opts) -> Result<Node, FetchError> {
+            fn fetch(&self, url: &str, opts: &Opts) -> Result<Node> {
                 let content =  match url.contains("start") {
                     false => "<html><head></head><body></body></html>",
                     true => "<html><head></head><body><a href=\"https://test1.com/end\">bootles</a></body></html>",
@@ -116,7 +116,7 @@ mod tests {
     fn test_crawl_same_domain_should_fail() {
         struct FakeClient {}
         impl FetchProvider for FakeClient {
-            fn fetch(&self, url: &str, opts: &Opts) -> Result<Node, FetchError> {
+            fn fetch(&self, url: &str, opts: &Opts) -> Result<Node> {
                 let content =  match url.contains("start") {
                     false => "<html><head></head><body></body></html>",
                     true => "<html><head></head><body><a href=\"https://test1.com/end\">bootles</a></body></html>",
