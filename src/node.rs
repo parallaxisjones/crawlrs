@@ -1,4 +1,4 @@
-use crate::Opts;
+use crate::api::crawl::CrawlOpts;
 use reqwest::Url;
 use select::document::Document;
 use select::predicate::Name;
@@ -7,13 +7,13 @@ use std::collections::HashSet;
 use std::path::Path;
 
 pub struct Node {
-    options: Opts,
+    options: CrawlOpts,
     pub url: String,
     pub body: String,
 }
 
 impl Node {
-    pub fn new(url: &str, body: &str, options: Opts) -> Node {
+    pub fn new(url: &str, body: &str, options: CrawlOpts) -> Node {
         Node {
             url: url.to_string(),
             body: body.to_string(),
