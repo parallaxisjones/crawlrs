@@ -6,14 +6,14 @@ use select::predicate::Predicate;
 use std::collections::HashSet;
 use std::path::Path;
 
-pub struct Node<'a> {
-    options: &'a Opts,
+pub struct Node {
+    options: Opts,
     pub url: String,
     pub body: String,
 }
 
-impl Node<'_> {
-    pub fn new<'a>(url: &str, body: &str, options: &'a Opts) -> Node<'a> {
+impl Node {
+    pub fn new(url: &str, body: &str, options: Opts) -> Node {
         Node {
             url: url.to_string(),
             body: body.to_string(),
